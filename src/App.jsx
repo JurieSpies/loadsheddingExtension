@@ -1,27 +1,27 @@
-import axios from 'axios';
 import { useEffect, useState } from 'react';
 
 function App() {
+  const [loadsheddingStatus, setLoadsheddingStatus] = useState('');
   const [userArea, setUserArea] = useState('');
   const [userProvince, setUserProvince] = useState('');
-  const [loadsheddingStatus, setLoadsheddingStatus] = useState('');
-  const statusUrl = 'https://ewn.co.za/assets/loadshedding/api/eskomstatus';
-  const areaUrl = 'https://loadshedding.eskom.co.za/LoadShedding/FindSuburbs?searchText=monument park&maxResults=3';
 
-  const axiosFunc = async (url, header, params) => {
-    const config = {
-      method: 'get',
-      url,
-      header,
-      params,
-    };
-    return axios(config).catch((res) => { console.log('❌❌❌', res); });
-  };
+  const encodeUrl = (url) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+  const statusUrl = encodeUrl('https://ewn.co.za/assets/loadshedding/api/eskomstatus');
+  const areaUrl = encodeUrl('https://loadshedding.eskom.co.za/LoadShedding/FindSuburbs?searchText=Monument&maxResults=300');
+
+  const fetchFunc = (url) => fetch(url)
+    .then((response) => {
+      if (response.ok) return response.json();
+      throw new Error('Network response was not ok.');
+    });
 
   useEffect(() => {
-    axiosFunc(statusUrl).then((res) => { setLoadsheddingStatus(res.data); });
-    // axiosFunc(areaUrl).then((res) => { console.log('🚀 example', res); });
+    fetchFunc(statusUrl).then((res) => setLoadsheddingStatus(res.contents));
   }, []);
+
+  useEffect(() => {
+    fetchFunc(areaUrl).then((res) => setUserArea(res.contents));
+  }, [userProvince.length > 3]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
